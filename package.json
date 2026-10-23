@@ -1,0 +1,31 @@
+{
+  "name": "luogu-vp-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "本地运行的洛谷虚拟参赛（VP）工具",
+  "license": "GPL-3.0-only",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c blue,green \"npm run dev -w @vp/server\" \"npm run dev -w @vp/web\"",
+    "build": "npm run build -w @vp/web && npm run build -w @vp/server",
+    "start": "npm run start -w @vp/server",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck -w @vp/web && npm run typecheck -w @vp/server",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "concurrently": "^10.0.6",
+    "prettier": "^3.6.0",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

@@ -1,0 +1,268 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+
+  ::selection {
+    @apply bg-teal-200 text-teal-950 dark:bg-teal-500/30 dark:text-teal-50;
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-zinc-950;
+  }
+
+  .btn-primary {
+    @apply bg-teal-600 text-white hover:bg-teal-700;
+  }
+
+  .btn-secondary {
+    @apply border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800;
+  }
+
+  .btn-ghost {
+    @apply text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100;
+  }
+
+  .btn-danger {
+    @apply border border-red-200 bg-white text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10;
+  }
+
+  .card {
+    @apply rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .input {
+    @apply w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 transition-colors focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder-zinc-600;
+  }
+
+  .label {
+    @apply text-sm font-medium text-zinc-800 dark:text-zinc-200;
+  }
+
+  .hint {
+    @apply text-xs text-zinc-500 dark:text-zinc-400;
+  }
+
+  .field-error {
+    @apply text-xs text-red-600 dark:text-red-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium;
+  }
+
+  .statement-table {
+    @apply my-4 overflow-x-auto;
+  }
+
+  .statement {
+    @apply text-base leading-7 text-zinc-700 dark:text-zinc-300;
+    overflow-wrap: anywhere;
+    overflow-x: auto;
+  }
+
+  .statement > :first-child {
+    @apply mt-0;
+  }
+
+  .statement > :last-child {
+    @apply mb-0;
+  }
+
+  .statement p {
+    @apply my-3;
+  }
+
+  .statement h1,
+  .statement h2,
+  .statement h3,
+  .statement h4 {
+    @apply mb-2 mt-6 font-semibold text-zinc-900 dark:text-zinc-100;
+  }
+
+  .statement h1 {
+    @apply text-xl;
+  }
+
+  .statement h2 {
+    @apply text-lg;
+  }
+
+  .statement h3 {
+    @apply text-base;
+  }
+
+  .statement ul {
+    @apply my-3 list-disc pl-6;
+  }
+
+  .statement ol {
+    @apply my-3 list-decimal pl-6;
+  }
+
+  .statement li {
+    @apply my-1;
+  }
+
+  .statement blockquote {
+    @apply my-4 border-l-2 border-zinc-300 pl-4 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400;
+  }
+
+  .statement code:not(pre code) {
+    @apply rounded bg-zinc-100 px-1 py-0.5 font-mono text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200;
+  }
+
+  .statement pre {
+    @apply my-3 overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950;
+  }
+
+  .statement pre code {
+    @apply block font-mono text-sm leading-6 text-zinc-800 dark:text-zinc-200;
+  }
+
+  .statement img {
+    @apply my-3 h-auto max-w-full rounded-sm;
+  }
+
+  .statement a {
+    @apply text-teal-700 underline decoration-teal-300 underline-offset-2 hover:decoration-teal-500 dark:text-teal-300 dark:decoration-teal-700;
+  }
+
+  .statement table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .statement th,
+  .statement td {
+    @apply border border-zinc-200 px-2 py-1 text-left align-top dark:border-zinc-800;
+  }
+
+  .statement th {
+    @apply bg-zinc-50 font-medium text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200;
+  }
+
+  .statement hr {
+    @apply my-6 border-zinc-200 dark:border-zinc-800;
+  }
+
+  .statement .katex-display {
+    @apply my-3 overflow-x-auto overflow-y-hidden py-1;
+  }
+}
+
+/* highlight.js 主题：尽量只使用 Zinc / Teal / Amber，不使用外部主题文件 */
+.hljs {
+  color: #27272a;
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #71717a;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-built_in,
+.hljs-type {
+  color: #0f766e;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string {
+  color: #b45309;
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-selector-attr {
+  color: #7c3aed;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #0e7490;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: #3f3f46;
+}
+
+.hljs-deletion {
+  color: #b91c1c;
+}
+
+.dark .hljs {
+  color: #e4e4e7;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: #71717a;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-literal,
+.dark .hljs-built_in,
+.dark .hljs-type {
+  color: #5eead4;
+}
+
+.dark .hljs-string,
+.dark .hljs-regexp,
+.dark .hljs-addition,
+.dark .hljs-attribute {
+  color: #fcd34d;
+}
+
+.dark .hljs-number,
+.dark .hljs-symbol,
+.dark .hljs-bullet,
+.dark .hljs-link {
+  color: #c4b5fd;
+}
+
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-name,
+.dark .hljs-selector-id,
+.dark .hljs-selector-class {
+  color: #67e8f9;
+}
+
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-params {
+  color: #d4d4d8;
+}
+
+.dark .hljs-deletion {
+  color: #fca5a5;
+}
