@@ -17,10 +17,35 @@
 - ICPC/IOI/乐多赛中展示结果；结果页可展开每题所有提交与评测详情。
 - 跟随系统 / 浅色 / 深色三种颜色模式。
 
-## 环境要求
+## 桌面版（Windows / macOS / Linux）
+
+普通用户不需要安装 Node，从 [GitHub Releases](https://github.com/JohnZhang888/luogu-vp-tools/releases) 下载对应文件即可：
+
+| 平台    | 文件                                        | 说明                                             |
+| ------- | ------------------------------------------- | ------------------------------------------------ |
+| Windows | `luogu-vp-setup-<版本>.exe`                 | 安装版，创建开始菜单与桌面快捷方式               |
+| Windows | `luogu-vp-<版本>-portable.exe`              | 免安装，双击即用；机房或无管理员权限时推荐       |
+| macOS   | `luogu-vp-<版本>-mac-x64.dmg`、`-arm64.dmg` | Intel 芯片选 x64，Apple 芯片选 arm64             |
+| Linux   | `luogu-vp-<版本>-linux-x64.AppImage`        | 免安装，`chmod +x` 后直接运行                    |
+| Linux   | `luogu-vp-<版本>-linux-x64.deb`             | Debian/Ubuntu，`sudo apt install ./<文件名>.deb` |
+
+首次使用仍需要系统里装有 **Google Chrome、Microsoft Edge 或 Chromium**（Windows 自带 Edge；macOS 通常需要自行安装 Chrome）。登录与提交都通过系统浏览器完成。
+
+安装包未做代码签名，首次运行会有系统提示：
+
+- Windows 的 SmartScreen：点“更多信息 → 仍要运行”。
+- macOS 提示无法验证开发者：右键 App →“打开”，或执行 `xattr -dr com.apple.quarantine "/Applications/Luogu VP.app"`。
+- Linux 的 AppImage 需要 FUSE；若无法运行，可加 `--appimage-extract-and-run`。
+- Linux 上若报 SUID sandbox 相关错误（Ubuntu 23.10+ 的 AppArmor 限制），用 `./luogu-vp-<版本>-linux-x64.AppImage --no-sandbox` 启动。
+
+桌面版把数据保存在系统用户目录：Windows 为 `%APPDATA%\luogu-vp-tools`，macOS 为 `~/Library/Application Support/luogu-vp-tools`，Linux 为 `~/.config/luogu-vp-tools`。想沿用源码版的登录状态，把仓库的 `.data/` 复制成该目录下的 `data/`。
+
+桌面版固定使用 `127.0.0.1:3000`。界面里的比赛状态保存在浏览器 localStorage，按“协议 + 主机 + 端口”隔离，换端口会看不到原来的比赛。
+
+## 源码运行要求
 
 - Node.js >= 22.12（开发时使用 Node 24）。
-- Microsoft Edge 或 Google Chrome。默认使用系统 Edge 的 `msedge` channel，不额外下载 Chromium。
+- Google Chrome、Microsoft Edge 或 Chromium。默认依次尝试系统浏览器（Windows 上优先 Edge，macOS 上优先 Chrome），不额外下载 Chromium。
 - 能访问 `www.luogu.com.cn`。
 
 ## 快速开始
@@ -45,7 +70,7 @@ npm start
 
 ## 使用
 
-1. 右上角点击“连接洛谷”，在弹出的浏览器窗口中完成登录。登录成功后窗口自动关闭；服务端只保存会话 Cookie，不保存密码。
+1. 右上角点击“连接洛谷”，在弹出的浏览器窗口中完成登录，然后回到本页点击「我已完成登录」（点击前不要关闭浏览器窗口，关闭会被当作取消登录）。为避免频繁请求洛谷，登录状态不会自动检测；确认后窗口自动关闭。服务端只保存会话 Cookie，不保存密码。
 2. 创建比赛：输入已结束的比赛 ID/链接，或切到“自选题目”添加题目 ID。
 3. 选择赛制、开始时间、时长、是否允许暂停，创建比赛。
 4. 概览页打开题目，阅读题面；进入提交页粘贴代码、选择语言和 O2，提交。
@@ -74,7 +99,10 @@ npm start
 - **登录窗口没有出现**：确认本机有图形界面；查看服务端日志。登录窗口只在登录时使用，提交始终无头。
 - **提交返回“需要先登录洛谷”**：会话过期。点击“连接洛谷”重新登录后再提交。
 - **无法读取比赛/题目**：确认网络能访问洛谷；部分未结束比赛或未公开题目无法导入。清理 `.data/cache` 可强制刷新缓存。
-- **端口占用**：设置 `VP_PORT` 启动服务；Vite 代理默认指向 `127.0.0.1:3000`，如改端口需同步修改 `apps/web/vite.config.ts`。
+- **端口占用**：设置 `VP_PORT` 启动服务；Vite 代理默认指向 `127.0.0.1:3000`，如改端口需同步修改 `apps/web/vite.config.ts`。桌面版固定使用 3000，提示被占用时请关闭占用该端口的程序。
+- **macOS/Linux 提示“未找到可用的浏览器”**：安装 Google Chrome 或 Chromium。程序会按平台探测常见安装路径，也会尝试 `VP_BROWSER_EXECUTABLE`。
+- **桌面版首次启动较慢**：Windows Defender 会扫描解压出来的服务端运行时，首次可能十几秒，之后会明显加快。
+- **打包时连接 `127.0.0.1:443` 失败**：Watt Toolkit 把 GitHub 写进了 hosts，但代理没运行。`npm run desktop` / `npm run desktop:win` 现在默认走 npmmirror；也可以启动 Watt Toolkit，或手动设置 `ELECTRON_MIRROR`、`ELECTRON_BUILDER_BINARIES_MIRROR`。
 
 ## 限制
 
@@ -85,12 +113,47 @@ npm start
 - 不保证对洛谷页面/接口变更的长期兼容；接口或页面改版后可能需要更新 `apps/server/src/luogu`。
 - 真实提交与评测链路的最终验证需要你的洛谷账号登录；本地开发不附带测试账号。
 
+## 打包桌面版
+
+```bash
+npm run desktop:run   # 构建前端/服务端并启动 Electron（开发调试）
+npm run desktop:dir   # 只生成免安装目录 release/win-unpacked
+npm run desktop       # 生成当前平台的安装包（Windows: nsis/portable；macOS: dmg/zip；Linux: AppImage/deb）
+```
+
+- 版本号同时写在根 `package.json` 和 `apps/desktop/package.json`，构建脚本会校验两者一致。
+- Windows 的安装包在 Windows 上构建；macOS 的 dmg 必须在 macOS 上构建；Linux 的 AppImage/deb 在 Linux 上构建。
+- 仓库自带 `.github/workflows/release.yml`：推送 `v*` 标签后，GitHub Actions 会在三个平台分别构建安装包并创建 Release。
+- 发布新版本：改好两个 `package.json` 的版本号，提交后执行 `git tag v0.1.0 && git push origin v0.1.0`。
+- 图标由 `scripts/make-icons.py` 生成（需要 Pillow），产物是 `apps/desktop/build/icon.{png,ico,icns}`。
+
+### 一键打 Windows 安装包
+
+双击仓库根目录的 `build-windows.cmd`，或在终端执行：
+
+```bash
+npm run desktop:win
+```
+
+脚本会：
+
+1. 校验 Node.js 版本和两个 `package.json` 的版本号；
+2. 默认通过 npmmirror 下载 Electron / NSIS（避免 GitHub 被 hosts 指向 127.0.0.1 后连接失败）；
+3. 清理旧的 Windows 安装包，重新构建前端/服务端并打包；
+4. 输出 `release/luogu-vp-setup-<版本>.exe` 和 `release/luogu-vp-<版本>-portable.exe`。
+
+可用参数：`--skip-build`（复用已有 dist）、`--no-mirror`（改用官方源）、`--open`（完成后打开 `release`；`.cmd` 默认带上）。
+
 ## 结构
 
 ```text
+apps/desktop    Electron 外壳：主进程、打包配置、图标
 apps/web        Vue 3 + Vite + Tailwind 前端
 apps/server     Fastify 本地服务 + Playwright 无头提交
 packages/core   前后端共用类型、计时/暂停、计分
+scripts         build-desktop.mjs / build-windows.mjs（桌面端构建/打包）、make-icons.py
+build-windows.cmd  Windows 一键打包入口（双击运行）
+.github         release.yml 三平台发布流水线
 AGENTS.md       项目约定与接口要点
 ```
 

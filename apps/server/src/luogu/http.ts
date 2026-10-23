@@ -7,6 +7,7 @@ import {
 } from '../errors';
 import { sleep } from '../util/fs';
 import { asNumber, asRecord, asString, isRecord } from '../util/guards';
+import { luoguThrottle } from './throttle';
 
 export interface LuoguRequestOptions {
   cookies?: string | null;
@@ -128,6 +129,9 @@ async function fetchFollowingRedirects(
     const headers: Record<string, string> = { ...DEFAULT_HEADERS };
     const cookie = buildCookieHeader(options.cookies);
     if (cookie !== undefined) headers.cookie = cookie;
+
+    // 所有发往洛谷的请求共用 500ms 最小间隔；重定向的每一跳也单独计时。
+    await luoguThrottle.wait();
 
     const response = await fetch(url, {
       headers,

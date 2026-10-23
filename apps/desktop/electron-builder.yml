@@ -1,0 +1,80 @@
+appId: com.johnzhang888.luogu-vp-tools
+productName: Luogu VP
+copyright: Copyright © 2026 JohnZhang888
+
+directories:
+  output: ../../release
+  buildResources: build
+
+electronVersion: 45.0.0
+
+files:
+  - main.cjs
+  - package.json
+
+extraResources:
+  - from: ../../build/desktop/server
+    to: server
+  - from: ../../dist/client
+    to: client
+  - from: ../../LICENSE
+    to: LICENSE
+
+asar: true
+npmRebuild: false
+electronLanguages:
+  - zh-CN
+  - en-US
+artifactName: luogu-vp-${version}-${os}-${arch}.${ext}
+compression: normal
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Luogu VP
+  artifactName: luogu-vp-setup-${version}.${ext}
+
+portable:
+  artifactName: luogu-vp-${version}-portable.${ext}
+
+mac:
+  icon: build/icon.icns
+  category: public.app-category.education
+  identity: null
+  gatekeeperAssess: false
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+
+linux:
+  icon: build/icon.png
+  category: Education
+  synopsis: 洛谷虚拟参赛（VP）工具
+  description: 本地运行的洛谷虚拟参赛工具，支持 ICPC / IOI / OI / 乐多赛制。
+  maintainer: JohnZhang888
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64

@@ -18,6 +18,7 @@ import { asNumber, asRecord, asString } from '../util/guards';
 import type { BrowserLauncher } from '../browser/launcher';
 import type { ProblemService } from '../luogu/problem';
 import type { RecordService } from '../luogu/record';
+import { luoguThrottle } from '../luogu/throttle';
 import type { SessionStore, StorageState } from '../session/store';
 
 const CAPTCHA_TIMEOUT_MS = 5 * 60 * 1000;
@@ -209,6 +210,7 @@ export class SubmissionService {
       });
 
       const problemUrl = `${appConfig.luoguBase}/problem/${encodeURIComponent(job.pid)}`;
+      await luoguThrottle.wait();
       await page.goto(problemUrl, { waitUntil: 'domcontentloaded' });
       if (job.cancelled) throw new AppError('CANCELLED', '提交已取消。', 400);
 
@@ -300,6 +302,7 @@ export class SubmissionService {
     if (captcha !== null) payload.captcha = captcha;
 
     const url = `/fe/api/problem/submit/${encodeURIComponent(job.pid)}`;
+    await luoguThrottle.wait();
     const result = await page.evaluate(
       async (args: {
         url: string;
@@ -360,6 +363,7 @@ export class SubmissionService {
   }
 
   private async fetchCaptcha(context: BrowserContext): Promise<CaptchaChallenge> {
+    await luoguThrottle.wait();
     const response = await context.request.get(
       `${appConfig.luoguBase}/api/verify/captcha`,
       {

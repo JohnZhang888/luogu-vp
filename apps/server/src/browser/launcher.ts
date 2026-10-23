@@ -1,8 +1,5 @@
-import {
-  chromium,
-  type Browser,
-  type BrowserContext,
-} from 'playwright-core';
+import { existsSync } from 'node:fs';
+import { chromium, type Browser, type BrowserContext } from 'playwright-core';
 import { appConfig } from '../config';
 import { AppError } from '../errors';
 import type { StorageState } from '../session/store';
@@ -38,7 +35,33 @@ export class BrowserLauncher {
 
   private candidateChannels(): string[] {
     if (appConfig.browserChannel !== '') return [appConfig.browserChannel];
-    return ['msedge', 'chrome'];
+    // macOS 默认没有 Edge，先试 Chrome；Windows 上 Edge 一定存在。
+    return process.platform === 'win32'
+      ? ['msedge', 'chrome']
+      : ['chrome', 'msedge'];
+  }
+
+  /** Playwright 的 channel 覆盖不到系统 Chromium，按平台补一遍常见安装路径。 */
+  private candidateExecutables(): string[] {
+    if (appConfig.browserExecutable !== '')
+      return [appConfig.browserExecutable];
+    if (process.platform === 'darwin') {
+      return [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+        '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      ];
+    }
+    if (process.platform === 'linux') {
+      return [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/microsoft-edge',
+      ];
+    }
+    return [];
   }
 
   private async launchHeadless(): Promise<Browser> {
@@ -53,21 +76,26 @@ export class BrowserLauncher {
         this.channel = channel;
         return browser;
       } catch (error) {
-        failures.push(`${channel}: ${error instanceof Error ? error.message : String(error)}`);
+        failures.push(
+          `${channel}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
-    if (appConfig.browserExecutable !== '') {
+    for (const executablePath of this.candidateExecutables()) {
+      if (!existsSync(executablePath)) continue;
       try {
         const browser = await chromium.launch({
-          executablePath: appConfig.browserExecutable,
+          executablePath,
           headless: true,
           args: ['--disable-blink-features=AutomationControlled'],
         });
-        this.channel = appConfig.browserExecutable;
+        this.channel = executablePath;
         return browser;
       } catch (error) {
-        failures.push(`executable: ${error instanceof Error ? error.message : String(error)}`);
+        failures.push(
+          `${executablePath}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -79,7 +107,9 @@ export class BrowserLauncher {
       this.channel = 'bundled-chromium';
       return browser;
     } catch (error) {
-      failures.push(`bundled: ${error instanceof Error ? error.message : String(error)}`);
+      failures.push(
+        `bundled: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     throw new AppError(
@@ -113,26 +143,31 @@ export class BrowserLauncher {
           viewport: { width: 1024, height: 800 },
           locale: 'zh-CN',
           timezoneId: 'Asia/Shanghai',
-              extraHTTPHeaders: { 'accept-language': 'zh-CN,zh;q=0.9' },
+          extraHTTPHeaders: { 'accept-language': 'zh-CN,zh;q=0.9' },
           args: ['--start-maximized'],
         });
       } catch (error) {
-        failures.push(`${channel}: ${error instanceof Error ? error.message : String(error)}`);
+        failures.push(
+          `${channel}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
-    if (appConfig.browserExecutable !== '') {
+    for (const executablePath of this.candidateExecutables()) {
+      if (!existsSync(executablePath)) continue;
       try {
         return await chromium.launchPersistentContext(userDataDir, {
-          executablePath: appConfig.browserExecutable,
+          executablePath,
           headless: false,
           viewport: { width: 1024, height: 800 },
           locale: 'zh-CN',
           timezoneId: 'Asia/Shanghai',
-              args: ['--start-maximized'],
+          args: ['--start-maximized'],
         });
       } catch (error) {
-        failures.push(`executable: ${error instanceof Error ? error.message : String(error)}`);
+        failures.push(
+          `${executablePath}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 

@@ -9,11 +9,8 @@ import { authRoutes } from './routes/auth';
 import { luoguRoutes } from './routes/luogu';
 import { recordRoutes } from './routes/records';
 import { submissionRoutes } from './routes/submissions';
-import {
-  createServices,
-  shutdownServices,
-  type Services,
-} from './services';
+import { systemRoutes } from './routes/system';
+import { createServices, shutdownServices, type Services } from './services';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -88,6 +85,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(luoguRoutes);
   await app.register(submissionRoutes);
   await app.register(recordRoutes);
+  await app.register(systemRoutes);
 
   app.get('/api/health', async () => ({ ok: true }));
 

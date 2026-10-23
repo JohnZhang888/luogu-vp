@@ -155,3 +155,7 @@ vite.config.ts.timestamp-*
 .env.local
 .env.*.local
 
+# 桌面端打包产物与临时运行时
+release/
+build/desktop/
+

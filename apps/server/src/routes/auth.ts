@@ -15,8 +15,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     }
   });
 
-  app.post('/api/auth/login', async (): Promise<LoginStatus> => {
-    return app.services.login.start();
+  app.post('/api/auth/login', async (request): Promise<LoginStatus> => {
+    const body = (request.body ?? {}) as { force?: unknown };
+    return app.services.login.start(body.force === true);
   });
 
   app.get('/api/auth/login', async (): Promise<LoginStatus> => {

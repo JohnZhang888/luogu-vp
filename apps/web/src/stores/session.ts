@@ -50,6 +50,8 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
+  // 这里只轮询本地服务端的登录状态（127.0.0.1），用于发现登录窗口被关闭、
+  // 同步错误提示；对洛谷的登录检测完全由用户点击“我已完成登录”触发。
   function schedulePoll(): void {
     stopPolling();
     pollTimer = window.setTimeout(async () => {
@@ -71,10 +73,10 @@ export const useSessionStore = defineStore('session', () => {
     }, 1000);
   }
 
-  async function startLogin(): Promise<void> {
+  async function startLogin(force = false): Promise<void> {
     loginStatus.value = { state: 'waiting', user: null, error: null };
     try {
-      const status = await api.post<LoginStatus>('/api/auth/login');
+      const status = await api.post<LoginStatus>('/api/auth/login', { force });
       applyLoginStatus(status);
       if (status.state === 'waiting') schedulePoll();
     } catch (requestError) {
@@ -96,7 +98,7 @@ export const useSessionStore = defineStore('session', () => {
       loginDialogOpen.value = false;
       return;
     }
-    await startLogin();
+    await startLogin(force);
   }
 
   async function checkLoginNow(): Promise<void> {
