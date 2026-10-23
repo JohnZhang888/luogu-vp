@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ContestFormat, JudgeResult } from '@vp/core';
-import { formatMemory, formatRecordTime } from '@/lib/format';
 import StatusBadge from '@/components/ui/StatusBadge.vue';
 import JudgeDetails from './JudgeDetails.vue';
 
@@ -24,9 +23,6 @@ function isScored(): boolean {
         :score="isScored() ? judge.score : null"
         :pending="false"
       />
-      <span class="text-xs text-zinc-500 dark:text-zinc-400">
-        {{ formatRecordTime(judge.timeMs) }} · {{ formatMemory(judge.memoryKb ?? 0) }}
-      </span>
       <span
         v-if="isScored() && judge.statusKey === 'AC'"
         class="text-xs text-zinc-500 dark:text-zinc-400"
@@ -34,6 +30,6 @@ function isScored(): boolean {
         得分 {{ judge.score }}
       </span>
     </div>
-    <JudgeDetails :judge="judge" />
+    <JudgeDetails :judge="judge" :scored="isScored()" />
   </div>
 </template>

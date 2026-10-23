@@ -231,7 +231,11 @@ onMounted(() => {
                   原始 {{ item.rawScore }} 分 · 计分 {{ item.score }} 分
                 </span>
               </div>
-              <JudgeDetails class="mt-3" :judge="item.judge" />
+              <JudgeDetails
+                class="mt-3"
+                :judge="item.judge"
+                :scored="format !== 'icpc'"
+              />
             </li>
           </ul>
         </div>
