@@ -42,6 +42,7 @@ npm run desktop:linux # Linux 一键打包 Windows 安装版/便携版 + Linux A
 - `scripts/build-windows.mjs` / `build-windows.cmd`：Windows 一键打包（nsis + portable），默认走 npmmirror，避免 hosts 劫持导致下载失败。
 - `scripts/build-linux.mjs`：Linux 一键打包（`--win --linux`：nsis + portable + AppImage）。没有 wine 时临时把 NSIS 的卸载器提取换成 electron-builder 自带的纯 JS 实现，退出时还原 `node_modules/app-builder-lib`。
 - `.github/workflows/release.yml`：推送 `v*` 标签后 Windows 与 Linux 两个 runner 构建并发布 Release（不再提供 macOS 与 deb）。
+- `CHANGELOG.md`：版本更新日志，格式基于 Keep a Changelog 1.1.0；发版前按「新增 / 变更 / 修复 / 移除」补充条目，打标签时把「未发布」改成日期。
 - `.data/`：运行时数据（session.json、browser-profile（Chromium）、browser-profile-firefox、cache），已 gitignore，绝不提交。桌面版用户数据在系统 userData 目录下的 `data/`。
 
 ## 硬约束

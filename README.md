@@ -19,7 +19,7 @@
 
 ## 桌面版（Windows / Linux）
 
-普通用户不需要安装 Node，从 [GitHub Releases](https://github.com/JohnZhang888/luogu-vp-tools/releases) 下载对应文件即可：
+普通用户不需要安装 Node，从 [GitHub Releases](https://github.com/JohnZhang888/luogu-vp/releases) 下载对应文件即可：
 
 | 平台    | 文件                                 | 说明                                       |
 | ------- | ------------------------------------ | ------------------------------------------ |
@@ -121,11 +121,11 @@ npm run desktop:dir   # 只生成免安装目录 release/win-unpacked（Windows�
 npm run desktop       # 生成当前平台的安装包（Windows: nsis/portable；Linux: AppImage）
 ```
 
-- 版本号同时写在根 `package.json` 和 `apps/desktop/package.json`，构建脚本会校验两者一致。
+- 版本号在根 `package.json`、`apps/*/package.json` 与 `packages/core/package.json` 中保持一致；三个打包脚本都只校验根与 `apps/desktop/package.json` 一致。
 - Linux 上推荐 `npm run desktop:linux`：一条命令同时产出 Windows 安装版、Windows 便携版和 AppImage。
 - Windows 的安装包可以在 Windows 上构建，也可以在 Linux 上交叉构建（见下）；macOS 与 deb 已不再发布。
 - 仓库自带 `.github/workflows/release.yml`：推送 `v*` 标签后，GitHub Actions 会在 Windows 与 Linux 两个平台分别构建安装包并创建 Release。
-- 发布新版本：改好两个 `package.json` 的版本号，提交后执行 `git tag v0.1.0 && git push origin v0.1.0`。
+- 发布新版本：更新所有 `package.json` 的版本号与 `CHANGELOG.md`，提交后执行 `git tag v0.2.0 && git push origin v0.2.0`。
 - 图标由 `scripts/make-icons.py` 生成（需要 Pillow），产物是 `apps/desktop/build/icon.{png,ico,icns}`（icns 目前不参与打包）。
 
 ### 一键打 Windows 安装包（Windows）
@@ -138,7 +138,7 @@ npm run desktop:win
 
 脚本会：
 
-1. 校验 Node.js 版本和两个 `package.json` 的版本号；
+1. 校验 Node.js 版本和根/桌面端 `package.json` 的版本号；
 2. 默认通过 npmmirror 下载 Electron / NSIS（避免 GitHub 被 hosts 指向 127.0.0.1 后连接失败）；
 3. 清理旧的 Windows 安装包，重新构建前端/服务端并打包；
 4. 输出 `release/luogu-vp-setup-<版本>.exe` 和 `release/luogu-vp-<版本>-portable.exe`。
@@ -175,6 +175,7 @@ scripts         build-desktop.mjs / build-linux.mjs / build-windows.mjs（桌面
 build-windows.cmd  Windows 一键打包入口（双击运行）
 .github         release.yml 双平台（Windows + Linux）发布流水线
 AGENTS.md       项目约定与接口要点
+CHANGELOG.md    版本更新日志（Keep a Changelog 格式）
 ```
 
 ## 许可证
