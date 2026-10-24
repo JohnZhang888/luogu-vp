@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ContestDetail, ContestFormat } from '@vp/core';
-import { CONTEST_FORMAT_LABELS } from '@vp/core';
+import {
+  CONTEST_FORMAT_LABELS,
+  MOCK_PROBLEM_FULL_SCORE,
+  MOCK_PROBLEM_PID,
+  MOCK_PROBLEM_TITLE,
+} from '@vp/core';
 import { api } from '@/lib/api';
 import {
   formatDateTimeLocalValue,
@@ -18,7 +23,7 @@ import Spinner from '@/components/ui/Spinner.vue';
 import ProblemPicker from '@/components/contest/ProblemPicker.vue';
 import { CircleAlert, RefreshCw, Search } from 'lucide-vue-next';
 
-type SourceKind = 'luogu' | 'custom';
+type SourceKind = 'luogu' | 'custom' | 'mock';
 type StartMode = 'now' | 'scheduled';
 
 const router = useRouter();
@@ -27,9 +32,21 @@ const problems = useProblemStore();
 const submissions = useSubmissionStore();
 
 const source = ref<SourceKind>('luogu');
+/**
+ * 虚构测试比赛的说明卡片。只在开发构建引入：生产构建中 import.meta.env.DEV
+ * 被替换为 false，Rollup 会把动态导入连同组件一起从产物中移除。
+ */
+const mockCard = import.meta.env.DEV
+  ? defineAsyncComponent(
+      () => import('@/components/contest/MockContestCard.vue'),
+    )
+  : null;
 const sourceOptions: Array<{ value: SourceKind; label: string }> = [
   { value: 'luogu', label: '洛谷比赛' },
   { value: 'custom', label: '自选题目' },
+  ...(import.meta.env.DEV
+    ? [{ value: 'mock' as const, label: '测试比赛' }]
+    : []),
 ];
 
 const contestIdInput = ref('');
@@ -97,6 +114,15 @@ const selectedProblems = computed<PickerProblem[]>(() => {
         fullScore: problem.fullScore,
       })) ?? []
     );
+  }
+  if (import.meta.env.DEV && source.value === 'mock') {
+    return [
+      {
+        pid: MOCK_PROBLEM_PID,
+        title: MOCK_PROBLEM_TITLE,
+        fullScore: MOCK_PROBLEM_FULL_SCORE,
+      },
+    ];
   }
   return customProblems.value;
 });
@@ -200,7 +226,9 @@ async function create(): Promise<void> {
       source:
         source.value === 'luogu' && imported.value !== null
           ? { kind: 'luogu', contestId: imported.value.id }
-          : { kind: 'custom' },
+          : source.value === 'mock'
+            ? { kind: 'mock' }
+            : { kind: 'custom' },
       format: format.value,
       icpcPenaltyCompileError: icpcPenaltyCompileError.value,
       startAt,
@@ -321,7 +349,9 @@ function resetCorruptData(): void {
           </p>
         </template>
 
-        <ProblemPicker v-else v-model="customProblems" />
+        <ProblemPicker v-else-if="source === 'custom'" v-model="customProblems" />
+
+        <component :is="mockCard" v-else-if="source === 'mock' && mockCard" />
       </section>
 
       <section class="card space-y-4 p-5 sm:p-6">

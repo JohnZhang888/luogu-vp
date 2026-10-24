@@ -52,7 +52,7 @@ const items = computed<NavItem[]>(() =>
       <span
         v-if="item.submitted"
         class="absolute right-1 top-1 size-1.5 rounded-full"
-        :class="item.accepted ? 'bg-teal-500' : 'bg-zinc-400 dark:bg-zinc-600'"
+        :class="item.accepted ? 'bg-green-500' : 'bg-zinc-400 dark:bg-zinc-600'"
       />
     </RouterLink>
   </nav>

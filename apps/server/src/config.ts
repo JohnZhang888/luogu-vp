@@ -31,4 +31,9 @@ export const appConfig = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   ),
   logLevel: readEnv('VP_LOG_LEVEL', 'info'),
+  /**
+   * 虚构测试比赛开关，默认开启；生产构建由 tsup 的 define 把
+   * process.env.VP_DEV_MOCK 固定为 "0"，因此产物中恒为 false。
+   */
+  mockEnabled: process.env.VP_DEV_MOCK !== '0',
 } as const;

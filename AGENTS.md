@@ -21,10 +21,15 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 
 本机 npm 不是 pnpm；不要引入 pnpm workspace 假设。Node 需 >= 22.12。
 
+## 工作流
+
+所有新功能开发与 bug 修复一律使用 GitHub Flow：从 `main` 拉出独立分支开发，完成后发 Pull Request 合并回 `main`。一个分支只做一件事，不混合无关改动。
+
 ## 目录
 
 - `packages/core/src`：类型、绝对时间/暂停算法、ICPC/IOI/OI/乐多计分、状态映射、API DTO。
 - `apps/server/src/luogu`：洛谷读取、提交、验证码、记录解析、配置缓存。
+- `apps/server/src/mock`：虚构测试比赛数据（题目详情、七种状态的评测结果、mock rid）。
 - `apps/server/src/session`：登录会话存储、可见窗口登录。
 - `apps/server/src/browser`：Playwright 启动器。
 - `apps/server/src/submissions`：提交队列、验证码等待、记录轮询。
@@ -46,7 +51,7 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - **乐多计分**：每次提交折算 `max(0.7, 0.95^(本题第几次提交-1))`，按题取最高折算分；最低 70% 折扣。修改公式先改 `packages/core/src/scoring.ts` 和测试。
 - **ICPC 罚时**：首次 AC 的有效用时 + 20 分钟 × AC 前未通过提交数；`icpcPenaltyCompileError` 决定 CE 是否计入。暂停时间不计入用时/罚时。
 - **无 OI 泄露**：`SubmissionJobView.judge` 对 `format === 'oi'` 永远为 null（`apps/server/src/submissions/service.ts` 的 `view()`）。
-- **UI**：Teal 强调色 + Zinc 中性色；图标只用 Lucide；不用 Emoji/特殊 Unicode 代替图标；除浮层/弹窗/下拉外不用阴影；三种颜色模式；不写“基于绝对时间”这类实现说明。
+- **UI**：Teal 强调色 + Zinc 中性色；图标只用 Lucide；不用 Emoji/特殊 Unicode 代替图标；除浮层/弹窗/下拉外不用阴影；三种颜色模式；不写“基于绝对时间”这类实现说明。评测状态色在 `apps/web/src/lib/verdict.ts` 统一定义：AC green、WA 红、RE violet、TLE/MLE/OLE/UKE sky、CE amber；AC 指示点等散落处须与其保持一致。
 - **禁用按钮要有原因提示**：按钮因输入为空而禁用时，鼠标悬停要显示说明（例如自选题目的「添加」悬停提示“请先输入题号”），不能用“死按钮”让人迷惑。
 - 不保存密码；不记录代码/ Cookie；不在日志里输出会话。
 - **桌面端固定端口 3000**：前端比赛状态存在 localStorage，按 origin（协议 + 主机 + 端口）隔离；不要为了“避免冲突”改成随机端口，否则用户会以为比赛丢了。
@@ -56,6 +61,13 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - **Electron 版本固定**：`apps/desktop/package.json` 的 `electron` 必须是精确版本，且与 `electron-builder.yml` 的 `electronVersion` 一致；electron-builder 不接受范围版本。
 - **桌面端浏览器探测**：Playwright 只带 channel，不下载 Chromium；`launcher.ts` 按平台补了 macOS/Linux 常见 Chrome/Chromium 路径，改动时保持 Windows 优先 Edge、macOS 优先 Chrome。
 - **本地打包默认走 npmmirror**：GitHub 在部分网络被 hosts 指向 127.0.0.1，未启动 Watt Toolkit 时 electron-builder 直连会 ECONNREFUSED；`build-desktop.mjs` 在非 CI 环境默认设置 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR`，`--no-mirror` 可关闭，CI 不受影响。
+
+## 测试比赛（mock，仅开发环境）
+
+- 创建页第三个来源「测试比赛」创建 `{ kind: 'mock' }` 比赛，内置唯一虚构题 `VPTEST1`；题号/标题/满分常量在 `packages/core/src/mock.ts`，前后端共用，改动时保持一致。
+- `apps/server/src/mock/mock.ts` 本地生成虚构题目详情与评测结果：七个测试点各覆盖 AC / WA / TLE / MLE / RE / OLE / UKE 之一，首个 AC 子任务得 10 分，总状态 WA；mock rid 从 9e9 起编号。
+- 接入点三处短路：`ProblemService.get`（isMockPid）、`SubmissionService.run` → `runMockJudge`（不开浏览器、不需登录、不访问洛谷，OI 下同样停在 `submitted` 不泄露结果，非 OI 停留约 2.5s 后完成）、`RecordService.fetchRecord`（isMockRid，覆盖比赛结束后的批量拉取）。前端提交页对 mock 比赛跳过「连接洛谷」要求。
+- **只在开发环境可用，不得进入生产**：开关是 `appConfig.mockEnabled`（`VP_DEV_MOCK !== '0'`，开发默认开）；`apps/server/tsup.config.ts` 用 `define` 把 `process.env.VP_DEV_MOCK` 固化为 `"0"`，生产/桌面产物中恒为 false，三个入口都会直接报错且不触发洛谷请求。前端用 `import.meta.env.DEV` 门控，且必须**内联**书写（不要存进中间变量，否则死代码消除不掉）：说明卡片是开发专用异步组件 `MockContestCard.vue`（生产构建连动态导入一起被 Rollup 移除）。改完跑 `npm run build` 后应 grep 不到 `dist/client` 中的「测试比赛 / VPTEST1」。
 
 ## 洛谷接口要点（实现依据，2026-10 实测）
 

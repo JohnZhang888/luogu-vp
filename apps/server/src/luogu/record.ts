@@ -4,11 +4,13 @@ import type {
   JudgeSubtask,
   JudgeTestCase,
 } from '@vp/core';
+import type { SessionStore } from '../session/store';
+import { appConfig } from '../config';
 import { AuthRequiredError, AppError } from '../errors';
+import { isMockRid, mockJudge } from '../mock/mock';
 import { asArray, asNumber, asNumberOrNull, asRecord, asString, pickString } from '../util/guards';
 import { getLuoguConfig, getStatusInfo, type LuoguConfig } from './config';
 import { luoguJson } from './http';
-import type { SessionStore } from '../session/store';
 
 const RECORD_CACHE_MS = 2000;
 
@@ -147,6 +149,13 @@ export class RecordService {
   constructor(private readonly session: SessionStore) {}
 
   async fetchRecord(rid: number): Promise<JudgeResult> {
+    if (isMockRid(rid)) {
+      if (!appConfig.mockEnabled) {
+        throw new AppError('RECORD_NOT_FOUND', '测试记录只在开发环境可用。', 404);
+      }
+      return mockJudge();
+    }
+
     const cached = this.cache.get(rid);
     if (cached !== undefined && Date.now() - cached.at < RECORD_CACHE_MS) {
       return cached.judge;

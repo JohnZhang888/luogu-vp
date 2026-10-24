@@ -19,6 +19,12 @@ import type { BrowserLauncher } from '../browser/launcher';
 import type { ProblemService } from '../luogu/problem';
 import type { RecordService } from '../luogu/record';
 import { luoguThrottle } from '../luogu/throttle';
+import {
+  isMockPid,
+  mockJudge,
+  MOCK_JUDGE_DELAY_MS,
+  nextMockRid,
+} from '../mock/mock';
 import type { SessionStore, StorageState } from '../session/store';
 
 const CAPTCHA_TIMEOUT_MS = 5 * 60 * 1000;
@@ -182,6 +188,10 @@ export class SubmissionService {
       job.state = 'preparing';
       this.touch(job);
 
+      if (isMockPid(job.pid) && !appConfig.mockEnabled) {
+        throw new AppError('MOCK_DISABLED', '测试比赛只在开发环境可用。', 400);
+      }
+
       const problem = await this.problems.get(job.pid);
       const language = problem.languages.find((item) => item.id === job.languageId);
       if (language === undefined) {
@@ -192,6 +202,11 @@ export class SubmissionService {
         );
       }
       if (job.enableO2 && !language.canO2) job.enableO2 = false;
+
+      if (isMockPid(job.pid)) {
+        await this.runMockJudge(job);
+        return;
+      }
 
       const storageState = await this.session.loadState();
       if (storageState === null) throw new AuthRequiredError();
@@ -246,6 +261,21 @@ export class SubmissionService {
       job.code = '';
       await this.closeJobBrowser(job);
     }
+  }
+
+  /** 虚构测试题：本地生成 rid 与评测结果，不打开浏览器、不访问洛谷。 */
+  private async runMockJudge(job: SubmissionJob): Promise<void> {
+    job.rid = nextMockRid();
+    job.state = job.format === 'oi' ? 'submitted' : 'judging';
+    job.error = null;
+    this.touch(job);
+    if (job.format === 'oi') return;
+
+    await sleep(MOCK_JUDGE_DELAY_MS);
+    if (job.cancelled) return;
+    job.judge = mockJudge();
+    job.state = 'done';
+    this.touch(job);
   }
 
   private async submitWithCaptcha(

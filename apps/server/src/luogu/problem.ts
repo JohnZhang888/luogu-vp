@@ -4,7 +4,9 @@ import type {
   ResolveProblemResult,
 } from '@vp/core';
 import { readCache, readStaleCache, writeCache } from '../cache/disk';
+import { appConfig } from '../config';
 import { AppError } from '../errors';
+import { isMockPid, mockProblem } from '../mock/mock';
 import {
   asArray,
   asNumber,
@@ -94,6 +96,13 @@ function buildProblem(
 
 export class ProblemService {
   async get(pid: string): Promise<ProblemDetail> {
+    if (isMockPid(pid)) {
+      if (!appConfig.mockEnabled) {
+        throw new AppError('PROBLEM_NOT_FOUND', '测试题目只在开发环境可用。', 404);
+      }
+      return mockProblem();
+    }
+
     const cached = await readCache<ProblemDetail>(cacheKey(pid), PROBLEM_TTL_MS);
     if (cached !== null) return cached;
 
