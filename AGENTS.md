@@ -26,6 +26,8 @@ npm run desktop:linux # Linux 一键打包 Windows 安装版/便携版 + Linux A
 
 所有新功能开发与 bug 修复一律使用 GitHub Flow：从 `main` 拉出独立分支开发，完成后发 Pull Request 合并回 `main`。一个分支只做一件事，不混合无关改动。
 
+例外：发布收尾类的小改动可直接提交到 `main`，不必为它单开分支和 PR——例如把 `CHANGELOG.md` 的「未发布」改成发布日期、修正文档里的一处链接笔误。这类改动只碰文档或元数据、且往往要和随后的标签落在同一个提交上，走 PR 反而多绕一圈。除此外的功能与修复仍按上面的流程走。
+
 ## 目录
 
 - `packages/core/src`：类型、绝对时间/暂停算法、ICPC/IOI/OI/乐多计分、状态映射、API DTO。
