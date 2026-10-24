@@ -13,7 +13,9 @@ export type ContestPhase = 'scheduled' | 'running' | 'paused' | 'finished';
 
 export type ContestSource =
   | { kind: 'luogu'; contestId: number }
-  | { kind: 'custom' };
+  | { kind: 'custom' }
+  /** 虚构测试比赛：题目与评测结果均由本地生成，不访问洛谷。 */
+  | { kind: 'mock' };
 
 export interface ContestProblem {
   pid: string;

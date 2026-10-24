@@ -31,6 +31,18 @@ const contestProblem = computed(() =>
   contest.problems.find((item) => item.pid === pid.value),
 );
 const format = computed(() => contest.state?.config.format ?? 'oi');
+const isMockSource = computed(
+  () => contest.state?.config.source.kind === 'mock',
+);
+/**
+ * 测试比赛的免登录与提示只在开发构建生效：生产构建中
+ * import.meta.env.DEV 被替换为 false，提示文案不会进入产物。
+ */
+const mockHint = computed(() =>
+  import.meta.env.DEV && isMockSource.value
+    ? '测试比赛：无需连接洛谷，提交后返回虚构的评测结果。'
+    : null,
+);
 
 const { text: code } = useDraft(pid.value);
 
@@ -149,7 +161,7 @@ watch(languageId, () => {
 
 async function submit(): Promise<void> {
   if (posting.value || contest.phase !== 'running') return;
-  if (session.user === null) {
+  if (session.user === null && !(import.meta.env.DEV && isMockSource.value)) {
     await session.openLogin();
     return;
   }
@@ -270,7 +282,10 @@ async function cancelCaptcha(): Promise<void> {
         />
 
         <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <p v-if="session.user === null" class="text-xs text-zinc-500 dark:text-zinc-400">
+          <p v-if="mockHint !== null" class="text-xs text-zinc-500 dark:text-zinc-400">
+            {{ mockHint }}
+          </p>
+          <p v-else-if="session.user === null" class="text-xs text-zinc-500 dark:text-zinc-400">
             提交前需要连接洛谷。
           </p>
           <p v-else class="text-xs text-zinc-500 dark:text-zinc-400">
