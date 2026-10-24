@@ -21,6 +21,10 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 
 本机 npm 不是 pnpm；不要引入 pnpm workspace 假设。Node 需 >= 22.12。
 
+## 工作流
+
+所有新功能开发与 bug 修复一律使用 GitHub Flow：从 `main` 拉出独立分支开发，完成后发 Pull Request 合并回 `main`。一个分支只做一件事，不混合无关改动。
+
 ## 目录
 
 - `packages/core/src`：类型、绝对时间/暂停算法、ICPC/IOI/OI/乐多计分、状态映射、API DTO。
