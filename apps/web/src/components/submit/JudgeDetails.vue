@@ -45,7 +45,7 @@ const showCompileMessage = computed(
 );
 
 const cardGridClass =
-  'grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2';
+  'grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-2';
 </script>
 
 <template>

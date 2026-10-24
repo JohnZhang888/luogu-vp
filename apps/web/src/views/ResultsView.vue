@@ -72,7 +72,7 @@ function resultTone(problemScore: ProblemScore | null): string {
   if (problemScore === null) return 'text-zinc-500 dark:text-zinc-400';
   if (format.value === 'icpc') {
     return problemScore.solved
-      ? 'text-teal-600 dark:text-teal-400'
+      ? 'text-green-600 dark:text-green-400'
       : 'text-zinc-500 dark:text-zinc-400';
   }
   return 'text-zinc-700 dark:text-zinc-300';

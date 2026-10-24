@@ -51,7 +51,7 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - **乐多计分**：每次提交折算 `max(0.7, 0.95^(本题第几次提交-1))`，按题取最高折算分；最低 70% 折扣。修改公式先改 `packages/core/src/scoring.ts` 和测试。
 - **ICPC 罚时**：首次 AC 的有效用时 + 20 分钟 × AC 前未通过提交数；`icpcPenaltyCompileError` 决定 CE 是否计入。暂停时间不计入用时/罚时。
 - **无 OI 泄露**：`SubmissionJobView.judge` 对 `format === 'oi'` 永远为 null（`apps/server/src/submissions/service.ts` 的 `view()`）。
-- **UI**：Teal 强调色 + Zinc 中性色；图标只用 Lucide；不用 Emoji/特殊 Unicode 代替图标；除浮层/弹窗/下拉外不用阴影；三种颜色模式；不写“基于绝对时间”这类实现说明。
+- **UI**：Teal 强调色 + Zinc 中性色；图标只用 Lucide；不用 Emoji/特殊 Unicode 代替图标；除浮层/弹窗/下拉外不用阴影；三种颜色模式；不写“基于绝对时间”这类实现说明。评测状态色在 `apps/web/src/lib/verdict.ts` 统一定义：AC green、WA 红、RE violet、TLE/MLE/OLE/UKE sky、CE amber；AC 指示点等散落处须与其保持一致。
 - **禁用按钮要有原因提示**：按钮因输入为空而禁用时，鼠标悬停要显示说明（例如自选题目的「添加」悬停提示“请先输入题号”），不能用“死按钮”让人迷惑。
 - 不保存密码；不记录代码/ Cookie；不在日志里输出会话。
 - **桌面端固定端口 3000**：前端比赛状态存在 localStorage，按 origin（协议 + 主机 + 端口）隔离；不要为了“避免冲突”改成随机端口，否则用户会以为比赛丢了。
