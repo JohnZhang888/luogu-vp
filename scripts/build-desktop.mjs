@@ -149,7 +149,9 @@ function packageApp() {
   }
   const extra = [];
   if (hasFlag('--dir')) extra.push('--dir');
+  // 可同时指定多个平台（如 --win --linux），electron-builder 一次产出全部目标。
   if (hasFlag('--win')) extra.push('--win');
+  if (hasFlag('--linux')) extra.push('--linux');
   const publish = readOption('--publish') ?? 'never';
   extra.push('--publish', publish);
   run(
@@ -164,7 +166,9 @@ function packageApp() {
 try {
   checkVersions();
   if (usingMirror) {
-    log('已启用 npmmirror 加速下载 Electron/NSIS（可用 --no-mirror 关闭）');
+    log(
+      '已启用 npmmirror 加速下载 Electron/NSIS/AppImage（可用 --no-mirror 关闭）',
+    );
   }
   buildProject();
   writeStageServer();
