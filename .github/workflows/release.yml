@@ -18,7 +18,6 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - macos-latest
           - ubuntu-latest
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -50,10 +49,7 @@ jobs:
           if-no-files-found: error
           path: |
             release/*.exe
-            release/*.dmg
-            release/*.zip
             release/*.AppImage
-            release/*.deb
 
   release:
     name: publish

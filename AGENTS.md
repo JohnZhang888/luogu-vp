@@ -17,6 +17,7 @@ npm run desktop:run   # 构建前后端并启动 Electron 桌面端
 npm run desktop:dir   # 生成免安装目录 release/win-unpacked
 npm run desktop       # 生成当前平台安装包（需要先构建，脚本内部会构建）
 npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmirror）
+npm run desktop:linux # Linux 一键打包 Windows 安装版/便携版 + Linux AppImage
 ```
 
 本机 npm 不是 pnpm；不要引入 pnpm workspace 假设。Node 需 >= 22.12。
@@ -39,7 +40,8 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - `apps/desktop`：Electron 主进程（`main.cjs`）与打包配置（`electron-builder.yml`、`build/icon.*`）。桌面端启动时用 `ELECTRON_RUN_AS_NODE=1` 起一个 Node 子进程跑服务端，开发时路径为 `build/desktop/server/runtime`。
 - `scripts/build-desktop.mjs`：构建前端/服务端、生成服务端运行时目录、调用 electron-builder。`scripts/make-icons.py` 生成图标。
 - `scripts/build-windows.mjs` / `build-windows.cmd`：Windows 一键打包（nsis + portable），默认走 npmmirror，避免 hosts 劫持导致下载失败。
-- `.github/workflows/release.yml`：推送 `v*` 标签后三平台构建并发布 Release。
+- `scripts/build-linux.mjs`：Linux 一键打包（`--win --linux`：nsis + portable + AppImage）。没有 wine 时临时把 NSIS 的卸载器提取换成 electron-builder 自带的纯 JS 实现，退出时还原 `node_modules/app-builder-lib`。
+- `.github/workflows/release.yml`：推送 `v*` 标签后 Windows 与 Linux 两个 runner 构建并发布 Release（不再提供 macOS 与 deb）。
 - `.data/`：运行时数据（session.json、browser-profile、cache），已 gitignore，绝不提交。桌面版用户数据在系统 userData 目录下的 `data/`。
 
 ## 硬约束
@@ -61,6 +63,8 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - **Electron 版本固定**：`apps/desktop/package.json` 的 `electron` 必须是精确版本，且与 `electron-builder.yml` 的 `electronVersion` 一致；electron-builder 不接受范围版本。
 - **桌面端浏览器探测**：Playwright 只带 channel，不下载 Chromium；`launcher.ts` 按平台补了 macOS/Linux 常见 Chrome/Chromium 路径，改动时保持 Windows 优先 Edge、macOS 优先 Chrome。
 - **本地打包默认走 npmmirror**：GitHub 在部分网络被 hosts 指向 127.0.0.1，未启动 Watt Toolkit 时 electron-builder 直连会 ECONNREFUSED；`build-desktop.mjs` 在非 CI 环境默认设置 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR`，`--no-mirror` 可关闭，CI 不受影响。
+- **发布产物只有 Windows 与 Linux**：Windows 提供 nsis 安装版 + portable 便携版，Linux 只提供 AppImage。不要再加回 macOS 目标（无 macOS 环境验证）和 deb 目标（用户要求只留这两种）；`electron-builder.yml` 里没有 `mac:` 段，不要凭 Electron 默认行为误打 dmg/zip。
+- **Linux 交叉打 Windows 包**：electron-builder 在非 Windows 平台打 NSIS 时会 `spawn wine` 执行安装包以取卸载器，这是硬编码的。`scripts/build-linux.mjs` 在检测不到 wine 时临时把该分支换成 electron-builder 自带的纯 JS `UninstallerReader`（macOS Catalina 分支的实现），构建结束/中断后还原 `node_modules/app-builder-lib`；装了 wine 的机器走官方路径。修改该脚本时保留还原逻辑（`finally` + 退出信号），否则会留下被改过的 `node_modules`。
 
 ## 测试比赛（mock，仅开发环境）
 
@@ -87,5 +91,5 @@ npm run desktop:win   # Windows 一键打包安装版 + 便携版（默认 npmmi
 - 每次改项目后更新本文件（功能/结构/约束变化时）。
 - 文件工具写入会保留原 mtime，Vite / tsx 的 watcher 可能收不到变更；改完源码后 `touch` 对应文件或重启 dev，否则浏览器/服务端会跑旧代码。
 - 至少跑 `npm test`、`npm run typecheck`、`npm run build`。真实提交/评测链路需要登录后手工验证；不要为了测试向洛谷刷提交。
-- 改动桌面端后至少跑一次 `npm run desktop:dir`，启动 `release/win-unpacked` 并确认 `/api/health`、静态页面、登录窗口都正常；发布前再用 `npm run desktop` 检查安装包。
+- 改动桌面端后至少跑一次 `npm run desktop:dir`，启动 `release/win-unpacked`（Linux 上是 `release/linux-unpacked`）并确认 `/api/health`、静态页面、登录窗口都正常；发布前用 `npm run desktop:linux` 检查三个包（安装版、便携版、AppImage）。
 - 前端视觉改动用 mock 路由或已结束比赛截图检查，避免依赖真实账号。

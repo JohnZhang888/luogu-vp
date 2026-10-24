@@ -50,31 +50,15 @@ nsis:
 portable:
   artifactName: luogu-vp-${version}-portable.${ext}
 
-mac:
-  icon: build/icon.icns
-  category: public.app-category.education
-  identity: null
-  gatekeeperAssess: false
-  target:
-    - target: dmg
-      arch:
-        - x64
-        - arm64
-    - target: zip
-      arch:
-        - x64
-        - arm64
-
 linux:
   icon: build/icon.png
+  # 包名是 @vp/desktop，AppImage 不允许可执行文件名里带 @，这里显式指定。
+  executableName: luogu-vp
   category: Education
   synopsis: 洛谷虚拟参赛（VP）工具
   description: 本地运行的洛谷虚拟参赛工具，支持 ICPC / IOI / OI / 乐多赛制。
   maintainer: JohnZhang888
   target:
     - target: AppImage
-      arch:
-        - x64
-    - target: deb
       arch:
         - x64
