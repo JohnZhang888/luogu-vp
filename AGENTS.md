@@ -42,7 +42,7 @@ npm run desktop:linux # Linux 一键打包 Windows 安装版/便携版 + Linux A
 - `scripts/build-windows.mjs` / `build-windows.cmd`：Windows 一键打包（nsis + portable），默认走 npmmirror，避免 hosts 劫持导致下载失败。
 - `scripts/build-linux.mjs`：Linux 一键打包（`--win --linux`：nsis + portable + AppImage）。没有 wine 时临时把 NSIS 的卸载器提取换成 electron-builder 自带的纯 JS 实现，退出时还原 `node_modules/app-builder-lib`。
 - `.github/workflows/release.yml`：推送 `v*` 标签后 Windows 与 Linux 两个 runner 构建并发布 Release（不再提供 macOS 与 deb）。
-- `.data/`：运行时数据（session.json、browser-profile、cache），已 gitignore，绝不提交。桌面版用户数据在系统 userData 目录下的 `data/`。
+- `.data/`：运行时数据（session.json、browser-profile（Chromium）、browser-profile-firefox、cache），已 gitignore，绝不提交。桌面版用户数据在系统 userData 目录下的 `data/`。
 
 ## 硬约束
 
@@ -61,7 +61,7 @@ npm run desktop:linux # Linux 一键打包 Windows 安装版/便携版 + Linux A
 - **服务端优雅退出**：桌面端通过带随机令牌的 `POST /api/system/shutdown` 关闭服务（未设置 `VP_SHUTDOWN_TOKEN` 时不注册该路由），以便 Playwright 关闭浏览器；不要改成无鉴权接口。
 - **electron-builder 的 node_modules 坑**：`extraResources` 复制源根目录下的 `node_modules` 会被 electron-builder 跳过，服务端运行时必须放在 `server/runtime/` 子目录（见 `scripts/build-desktop.mjs`），否则打包后启动报 `ERR_MODULE_NOT_FOUND`。
 - **Electron 版本固定**：`apps/desktop/package.json` 的 `electron` 必须是精确版本，且与 `electron-builder.yml` 的 `electronVersion` 一致；electron-builder 不接受范围版本。
-- **桌面端浏览器探测**：Playwright 只带 channel，不下载 Chromium；`launcher.ts` 按平台补了 macOS/Linux 常见 Chrome/Chromium 路径，改动时保持 Windows 优先 Edge、macOS 优先 Chrome。
+- **浏览器探测（登录跟随默认浏览器，提交优先 Chromium）**：`launcher.ts` 不下载浏览器，只驱动系统已安装的浏览器。`detect.ts` 负责平台探测与候选排序：Linux 读 `xdg-settings`（回退 `xdg-mime`），Windows 读注册表 `UrlAssociations\https\UserChoice`，macOS 读 `LaunchServices`；默认浏览器是 Firefox、Chrome、Edge、Chromium、Brave、Vivaldi 时登录窗口优先用它。无头提交优先 Chromium 系（Windows 优先 Edge，macOS/Linux 优先 Chrome），没有时才用系统 Firefox。Firefox 必须走 `channel: 'moz-firefox'`（WebDriver BiDi，需 Firefox 129+）；Linux 上 Playwright 的该 channel 只认 `/snap/bin/firefox`，所以 `detect.ts` 会补 `/usr/lib/firefox/firefox` 等路径并传 `executablePath`。两种引擎的 profile 分开：Chromium 用 `browser-profile/`，Firefox 用 `browser-profile-firefox/`；`storageState` 与引擎无关，跨引擎会话可复用（已实测）。`VP_BROWSER=auto|firefox|chrome|edge|chromium|...` 可指定，`VP_BROWSER_CHANNEL` / `VP_BROWSER_EXECUTABLE` 优先级更高；显式指定时不再自动回退到别的浏览器。
 - **本地打包默认走 npmmirror**：GitHub 在部分网络被 hosts 指向 127.0.0.1，未启动 Watt Toolkit 时 electron-builder 直连会 ECONNREFUSED；`build-desktop.mjs` 在非 CI 环境默认设置 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR`，`--no-mirror` 可关闭，CI 不受影响。
 - **发布产物只有 Windows 与 Linux**：Windows 提供 nsis 安装版 + portable 便携版，Linux 只提供 AppImage。不要再加回 macOS 目标（无 macOS 环境验证）和 deb 目标（用户要求只留这两种）；`electron-builder.yml` 里没有 `mac:` 段，不要凭 Electron 默认行为误打 dmg/zip。
 - **Linux 交叉打 Windows 包**：electron-builder 在非 Windows 平台打 NSIS 时会 `spawn wine` 执行安装包以取卸载器，这是硬编码的。`scripts/build-linux.mjs` 在检测不到 wine 时临时把该分支换成 electron-builder 自带的纯 JS `UninstallerReader`（macOS Catalina 分支的实现），构建结束/中断后还原 `node_modules/app-builder-lib`；装了 wine 的机器走官方路径。修改该脚本时保留还原逻辑（`finally` + 退出信号），否则会留下被改过的 `node_modules`。

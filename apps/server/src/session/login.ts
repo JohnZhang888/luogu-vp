@@ -1,10 +1,8 @@
-import path from 'node:path';
 import type { BrowserContext, Page } from 'playwright-core';
 import type { AuthUser, LoginStatus } from '@vp/core';
 import { appConfig } from '../config';
 import { AppError } from '../errors';
 import { asRecord } from '../util/guards';
-import { ensureDir } from '../util/fs';
 import type { BrowserLauncher } from '../browser/launcher';
 import { luoguThrottle } from '../luogu/throttle';
 import type { SessionStore, StorageState } from './store';
@@ -46,9 +44,9 @@ export class LoginManager {
     }
 
     try {
-      const profileDir = path.join(appConfig.dataDir, 'browser-profile');
-      await ensureDir(profileDir);
-      const context = await this.launcher.launchPersistentContext(profileDir);
+      const { context } = await this.launcher.launchLoginWindow(
+        appConfig.dataDir,
+      );
       this.context = context;
       context.on('close', () => {
         if (this.status.state === 'waiting') {

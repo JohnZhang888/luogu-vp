@@ -23,6 +23,8 @@ export const appConfig = {
     path.join(repoRoot, 'dist', 'client'),
   ),
   luoguBase: readEnv('VP_LUOGU_BASE', 'https://www.luogu.com.cn').replace(/\/+$/, ''),
+  /** auto 表示跟随系统默认浏览器；也可填 firefox / chrome / edge / chromium 等。 */
+  browserPreference: readEnv('VP_BROWSER', 'auto'),
   browserChannel: readEnv('VP_BROWSER_CHANNEL', ''),
   browserExecutable: readEnv('VP_BROWSER_EXECUTABLE', ''),
   requestTimeoutMs: Number(readEnv('VP_REQUEST_TIMEOUT', '15000')),

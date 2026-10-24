@@ -27,7 +27,7 @@
 | Windows | `luogu-vp-<版本>-portable.exe`       | 免安装，双击即用；机房或无管理员权限时推荐 |
 | Linux   | `luogu-vp-<版本>-linux-x64.AppImage` | 免安装，`chmod +x` 后直接运行              |
 
-首次使用仍需要系统里装有 **Google Chrome、Microsoft Edge 或 Chromium**（Windows 自带 Edge，Linux 通常需要自行安装 Chrome/Chromium）。登录与提交都通过系统浏览器完成。
+首次使用仍需要系统里装有 **Firefox（129 及以上）、Google Chrome、Microsoft Edge 或 Chromium** 之一；程序会优先用系统的默认浏览器打开登录窗口（支持 Firefox / Chrome / Edge / Chromium / Brave / Vivaldi），不额外下载浏览器。登录和提交都用系统里已安装的浏览器完成；没有 Chromium 系浏览器时，提交会自动改用 Firefox。
 
 安装包未做代码签名，首次运行会有系统提示：
 
@@ -42,7 +42,7 @@
 ## 源码运行要求
 
 - Node.js >= 22.12（开发时使用 Node 24）。
-- Google Chrome、Microsoft Edge 或 Chromium。默认依次尝试系统浏览器（Windows 上优先 Edge，Linux 上优先 Chrome），不额外下载 Chromium。
+- Firefox 129+、Google Chrome、Microsoft Edge 或 Chromium 任一。默认优先跟随系统默认浏览器；找不到时按 Windows 优先 Edge、macOS/Linux 优先 Chrome 的顺序回退，最后才用 Firefox。不额外下载 Chromium。
 - 能访问 `www.luogu.com.cn`。
 
 ## 快速开始
@@ -63,7 +63,7 @@ npm start
 
 打开 `http://127.0.0.1:3000`。构建后若重新构建了前端，需要重启服务以加载新的静态资源清单。
 
-可选配置见 `.env.example`（端口、数据目录、浏览器 channel 等）。服务不会自动读取 `.env` 文件，请在启动前通过环境变量设置。
+可选配置见 `.env.example`（端口、数据目录、浏览器选择等）。服务不会自动读取 `.env` 文件，请在启动前通过环境变量设置。
 
 ## 使用
 
@@ -92,12 +92,14 @@ npm start
 
 ## 常见问题
 
-- **“未找到可用的浏览器”**：安装 Edge/Chrome；或设置 `VP_BROWSER_CHANNEL=chrome`、`VP_BROWSER_EXECUTABLE=<浏览器路径>`。
+- **“未找到可用的浏览器”**：安装 Firefox（129 及以上）、Chrome、Edge 或 Chromium；或设置 `VP_BROWSER=firefox`、`VP_BROWSER_EXECUTABLE=<浏览器路径>`。
+- **登录窗口是新的 Firefox 窗口，没有我平时的登录状态**：浏览器自动化不能复用正在使用的配置档（会与日常浏览冲突），所以登录窗口使用独立配置档；在这个窗口登录一次后，会话会保存下来，之后一般不需要重复登录。
+- **登录窗口用 Firefox，提交却用 Chrome**：登录跟随系统默认浏览器，提交优先用 Chromium 系浏览器（更快更稳）。两者共用保存下来的会话 Cookie，不影响使用；想固定用某一款可设置 `VP_BROWSER`。
 - **登录窗口没有出现**：确认本机有图形界面；查看服务端日志。登录窗口只在登录时使用，提交始终无头。
 - **提交返回“需要先登录洛谷”**：会话过期。点击“连接洛谷”重新登录后再提交。
 - **无法读取比赛/题目**：确认网络能访问洛谷；部分未结束比赛或未公开题目无法导入。清理 `.data/cache` 可强制刷新缓存。
 - **端口占用**：设置 `VP_PORT` 启动服务；Vite 代理默认指向 `127.0.0.1:3000`，如改端口需同步修改 `apps/web/vite.config.ts`。桌面版固定使用 3000，提示被占用时请关闭占用该端口的程序。
-- **Linux 提示“未找到可用的浏览器”**：安装 Google Chrome 或 Chromium。程序会按平台探测常见安装路径，也会尝试 `VP_BROWSER_EXECUTABLE`。
+- **Linux 提示“未找到可用的浏览器”**：安装 Firefox（129 及以上）、Google Chrome 或 Chromium。程序会按 `xdg-settings` 的默认浏览器优先探测，也会尝试 `VP_BROWSER_EXECUTABLE`。
 - **桌面版首次启动较慢**：Windows Defender 会扫描解压出来的服务端运行时，首次可能十几秒，之后会明显加快。
 - **打包时连接 `127.0.0.1:443` 失败**：Watt Toolkit 把 GitHub 写进了 hosts，但代理没运行。`npm run desktop` / `npm run desktop:win` / `npm run desktop:linux` 现在默认走 npmmirror；也可以启动 Watt Toolkit，或手动设置 `ELECTRON_MIRROR`、`ELECTRON_BUILDER_BINARIES_MIRROR`。
 
@@ -106,6 +108,7 @@ npm start
 - 只支持已经结束的洛谷公开比赛；未结束比赛的题目通常不可见。
 - 验证码目前只自动处理图片验证码；Turnstile/易盾滑块会报“不支持”。
 - 提交串行排队，一次只处理一个提交任务。
+- 登录窗口使用独立的浏览器配置档，不会复用你日常浏览器的登录状态或插件；首次需要在弹出的窗口中登录一次。
 - 不保存历史比赛成绩；开始新比赛会清除当前结果。
 - 不保证对洛谷页面/接口变更的长期兼容；接口或页面改版后可能需要更新 `apps/server/src/luogu`。
 - 真实提交与评测链路的最终验证需要你的洛谷账号登录；本地开发不附带测试账号。
