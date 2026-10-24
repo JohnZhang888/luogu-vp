@@ -5,9 +5,7 @@
 格式基于 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循[语义化版本 2.0.0](https://semver.org/lang/zh-CN/)。
 
-## [0.2.0] - 未发布
-
-> 打 `v0.2.0` 标签时把「未发布」替换为发布日期（YYYY-MM-DD）。
+## [0.2.0] - 2026-10-24
 
 ### 新增
 
